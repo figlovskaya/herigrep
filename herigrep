@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+# usage: herigrep [HG_OPTS] dir1 [dirs...] [FIND_OPTS] -- [GREP_OPTIONS]
+# HG_OPTS:
+#   -h         dispay this screen
+
+# find dir1 [dirs] FIND_OPTS -type f -print0 | xargs -0 grep GREP_OPTS
+
+version='0.1'
+
+usage(){
+cat 1>&2 <<EOF
+-h        display this screen
+EOF
+}
+
+while getopts hV f; do
+    case "$f" in
+	'?')
+	    exit 1;;
+	h)
+	    usage
+	    exit 0;;
+	V)
+	    echo $version
+	    exit 0;;
+    esac
+done
+
+shift `expr $OPTIND - 1`
+
+#echo "$@"
+
+#for i in "$@"; do
+#    if test "$i" = '--'; then
+#	break
+#    fi
+#    find_opts="$find_opts $i"
+#done
+while test "$#" -gt 0; do
+    case "$1" in
+	-*)
+	    break;;
+	*)
+	    print_sh=`printf '%q' "$1"`
+	    dirs="$dirs $print_sh"
+	    shift;;
+    esac
+done
+
+while test "$#" -gt 0; do
+   if test "$1" = '--'; then
+	shift
+	break
+   fi
+   find_opts="$find_opts $1"
+   shift
+done
+
+find $dirs '(' $find_opts ')' -type f -print0 | xargs -0 grep "$@"
