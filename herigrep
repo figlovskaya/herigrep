@@ -1,16 +1,14 @@
 #!/usr/bin/env bash
 
-# usage: herigrep [HG_OPTS] dir1 [dirs...] [FIND_OPTS] -- [GREP_OPTIONS]
-# HG_OPTS:
-#   -h         dispay this screen
-
-# find dir1 [dirs] FIND_OPTS -type f -print0 | xargs -0 grep GREP_OPTS
-
 version='0.1'
 
 usage(){
 cat 1>&2 <<EOF
--h        display this screen
+usage: herigrep [HG_OPTS] dir1 [dirs...] [FIND_OPTS] -- [GREP_OPTIONS]
+HG_OPTS:
+      -h        display this screen
+      -V        print version
+Example: herigrep /usr/share/awk -name '*.awk' -- quick
 EOF
 }
 
@@ -53,8 +51,12 @@ while test "$#" -gt 0; do
 	shift
 	break
    fi
-   find_opts="$find_opts $1"
+   print_sh=`printf '%q' "$1"`
+   find_opts="$find_opts $print_sh"
    shift
 done
 
-find $dirs '(' $find_opts ')' -type f -print0 | xargs -0 grep "$@"
+echo $dirs
+find_cmd="find $dirs '(' $find_opts ')' -type f -print0"
+#echo "$find_cmd"
+eval "$find_cmd" | xargs -0 grep "$@"
